@@ -8,6 +8,7 @@
 
 var CLINIC_NAME = 'LASUTH Blood Donor Clinic';
 var CLINIC_REPLY_TO = ''; // optional: clinic inbox for donor replies
+var CLINIC_NOTIFY_EMAIL = 'ademolaayoola89@gmail.com'; // admin receives copy of donor confirmation
 var DONOR_SHEET_NAME = 'Blood Donation Bookings';
 var DONOR_SHEET_TAB = 'Donors';
 var SHEET_ID_KEY = 'DONOR_SHEET_ID';
@@ -82,6 +83,73 @@ function isValidEmail_(email) {
 }
 
 function sendDonorConfirmation_(data) {
+  var email = buildDonorConfirmationEmail_(data);
+
+  GmailApp.sendEmail(data.email, email.subject, email.plainBody, {
+    htmlBody: email.htmlBody,
+    name: CLINIC_NAME,
+    replyTo: CLINIC_REPLY_TO || undefined
+  });
+}
+
+function notifyClinic_(data) {
+  var clinicEmail = getClinicNotifyEmail_();
+  if (!clinicEmail) return;
+
+  var email = buildDonorConfirmationEmail_(data);
+  var sheetUrl = getDonorSheetUrl_();
+  var adminBanner = buildAdminBanner_(data, sheetUrl);
+
+  var subject = '[Admin copy] Donor confirmation — ' + data.name + ' (' + data.dateLabel + ')';
+  var htmlBody = adminBanner + email.htmlBody;
+  var plainBody = [
+    'ADMIN COPY — same confirmation sent to donor: ' + data.email,
+    '',
+    'Donor phone: ' + (data.phone || '—'),
+    'Donor age: ' + (data.age || '—'),
+    'Donor gender: ' + (data.gender || '—'),
+    'Notes: ' + (data.notes || '—'),
+    sheetUrl ? 'View all bookings: ' + sheetUrl : '',
+    '',
+    '--- Donor confirmation below ---',
+    '',
+    email.plainBody
+  ].filter(Boolean).join('\n');
+
+  GmailApp.sendEmail(clinicEmail, subject, plainBody, {
+    htmlBody: htmlBody,
+    name: CLINIC_NAME
+  });
+}
+
+function getClinicNotifyEmail_() {
+  if (CLINIC_NOTIFY_EMAIL && isValidEmail_(CLINIC_NOTIFY_EMAIL)) {
+    return String(CLINIC_NOTIFY_EMAIL).trim();
+  }
+
+  var activeEmail = Session.getActiveUser().getEmail();
+  return activeEmail || '';
+}
+
+function buildAdminBanner_(data, sheetUrl) {
+  return [
+    '<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto 16px;color:#1A1414;">',
+    '  <div style="background:#FFF3F3;border:1px solid #F3C8C8;border-radius:12px;padding:16px 18px;">',
+    '    <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#8B0000;font-weight:700;">Admin notification</p>',
+    '    <p style="margin:0 0 10px;font-size:14px;line-height:1.5;">The confirmation below was also sent to <strong>' + escapeHtml_(data.email) + '</strong>.</p>',
+    '    <p style="margin:0;font-size:13px;color:#5a2424;line-height:1.6;">',
+    '      <strong>Phone:</strong> ' + escapeHtml_(data.phone || '—') + '<br>',
+    '      <strong>Age:</strong> ' + escapeHtml_(String(data.age || '—')) + '<br>',
+    '      <strong>Gender:</strong> ' + escapeHtml_(data.gender || '—') + '<br>',
+    '      <strong>Notes:</strong> ' + escapeHtml_(data.notes || '—'),
+    '    </p>',
+    sheetUrl ? '    <p style="margin:12px 0 0;font-size:13px;"><a href="' + escapeHtml_(sheetUrl) + '" style="color:#C8102E;font-weight:600;">Open donor follow-up sheet</a></p>' : '',
+    '  </div>',
+    '</div>'
+  ].join('\n');
+}
+
+function buildDonorConfirmationEmail_(data) {
   var firstName = String(data.name).trim().split(/\s+/)[0] || 'there';
   var subject = 'Your blood donation booking is confirmed — ' + data.dateLabel;
 
@@ -99,7 +167,7 @@ function sendDonorConfirmation_(data) {
     summaryRow_('Location', data.hospital),
     summaryRow_('Clinic', 'Blood Donor Clinic — Main Building'),
     data.previous ? summaryRow_('Previous donor', data.previous) : '',
-  '    <div style="margin-top:20px;padding:16px;background:#FFF3F3;border:1px solid #F3C8C8;border-radius:12px;">',
+    '    <div style="margin-top:20px;padding:16px;background:#FFF3F3;border:1px solid #F3C8C8;border-radius:12px;">',
     '      <p style="margin:0 0 10px;font-weight:700;color:#8B0000;">Before you come</p>',
     '      <ul style="margin:0;padding-left:18px;color:#5a2424;line-height:1.7;font-size:14px;">',
     '        <li>Eat a proper meal within 3 hours before donating.</li>',
@@ -134,39 +202,11 @@ function sendDonorConfirmation_(data) {
     '- Avoid alcohol for 24 hours before your appointment.'
   ].filter(Boolean).join('\n');
 
-  GmailApp.sendEmail(data.email, subject, plainBody, {
-    htmlBody: htmlBody,
-    name: CLINIC_NAME,
-    replyTo: CLINIC_REPLY_TO || undefined
-  });
-}
-
-function notifyClinic_(data) {
-  var clinicEmail = Session.getActiveUser().getEmail();
-  if (!clinicEmail) return;
-
-  var sheetUrl = getDonorSheetUrl_();
-  var subject = 'New donation booking — ' + data.name + ' (' + data.dateLabel + ')';
-  var body = [
-    'A new blood donation booking was submitted.',
-    '',
-    'Name: ' + data.name,
-    'Age: ' + (data.age || '—'),
-    'Gender: ' + (data.gender || '—'),
-    'Phone: ' + (data.phone || '—'),
-    'Email: ' + data.email,
-    'Date: ' + data.dateLabel,
-    'Time: ' + data.time,
-    'Hospital: ' + data.hospital,
-    'Previous donor: ' + (data.previous || '—'),
-    'Notes: ' + (data.notes || '—'),
-    '',
-    sheetUrl ? 'View all bookings: ' + sheetUrl : 'Admin sheet: run setupDonorSheet() in Apps Script to create the donor log.'
-  ].join('\n');
-
-  GmailApp.sendEmail(clinicEmail, subject, body, {
-    name: 'Blood Donation App'
-  });
+  return {
+    subject: subject,
+    plainBody: plainBody,
+    htmlBody: htmlBody
+  };
 }
 
 /**

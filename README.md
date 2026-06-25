@@ -31,7 +31,7 @@ npx serve .
 1. Go to [script.google.com](https://script.google.com) and click **New project**.
 2. Delete any default code in `Code.gs`.
 3. Copy the entire contents of [`google-apps-script/Code.gs`](./google-apps-script/Code.gs) into the editor.
-4. (Optional) Set `CLINIC_REPLY_TO` at the top of `Code.gs` to a clinic inbox address.
+4. (Optional) Set `CLINIC_REPLY_TO` for donor replies and `CLINIC_NOTIFY_EMAIL` for a specific admin inbox.
 5. Click **Save** and name the project (e.g. `Blood Donation Email`).
 
 ### 2. Authorize Gmail
@@ -90,6 +90,8 @@ Each booking is logged to a Google Sheet so admins can track and follow up with 
 | Admin Notes | Free text for staff |
 
 Clinic notification emails also include a link to the sheet after it exists.
+
+The admin also receives a **copy of the donor confirmation email** (same booking details and reminders), with an extra banner showing phone, age, gender, notes, and the sheet link.
 
 ## API contract
 
