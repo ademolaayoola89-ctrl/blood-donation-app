@@ -22,6 +22,7 @@ npx serve .
 - Booking form with age validation (18–60) and 30-day scheduling
 - Thank-you page with pre-donation reminders
 - Email confirmation via Google Apps Script + Gmail
+- Admin Google Sheet log for donor follow-up
 
 ## Email setup (Google Apps Script)
 
@@ -61,6 +62,34 @@ const GAS_WEB_APP_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/e
 1. Open the deployed Web App URL in a browser — you should see a JSON health check.
 2. Submit a test booking in the app with your own email.
 3. Check inbox (and spam) for the confirmation email.
+
+## Admin Google Sheet (donor follow-up)
+
+Each booking is logged to a Google Sheet so admins can track and follow up with donors.
+
+### One-time setup
+
+1. In your Apps Script project, paste the latest [`google-apps-script/Code.gs`](./google-apps-script/Code.gs) and **Save**.
+2. Select **`setupDonorSheet`** from the function dropdown and click **Run**.
+3. Approve the new **Google Sheets** permission when prompted.
+4. Open **View → Logs** — copy the sheet URL (starts with `https://docs.google.com/spreadsheets/d/...`).
+5. Bookmark that sheet for daily admin use.
+6. **Redeploy** the Web App (Deploy → Manage deployments → Edit → New version → Deploy).
+
+> If you skip `setupDonorSheet`, the sheet is created automatically on the next booking.
+
+### Sheet columns
+
+| Column | Purpose |
+|--------|---------|
+| Booked At | When the form was submitted |
+| Name, Age, Gender, Phone, Email | Donor details |
+| Donation Date, Time, Hospital | Appointment info |
+| Previous Donor, Notes | Extra context from the form |
+| Follow-up Status | Dropdown: Pending, Contacted, Confirmed, Completed, No-show, Cancelled |
+| Admin Notes | Free text for staff |
+
+Clinic notification emails also include a link to the sheet after it exists.
 
 ## API contract
 

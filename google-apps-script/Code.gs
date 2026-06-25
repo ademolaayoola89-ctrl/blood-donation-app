@@ -1,10 +1,32 @@
 /**
  * Blood Donation App — Email Backend
  * Deploy as a Web App (Execute as: Me, Who has access: Anyone).
+ *
+ * Admin sheet: run setupDonorSheet() once from the editor to create the
+ * Google Sheet, or let the first booking create it automatically.
  */
 
 var CLINIC_NAME = 'LASUTH Blood Donor Clinic';
 var CLINIC_REPLY_TO = ''; // optional: clinic inbox for donor replies
+var DONOR_SHEET_NAME = 'Blood Donation Bookings';
+var DONOR_SHEET_TAB = 'Donors';
+var SHEET_ID_KEY = 'DONOR_SHEET_ID';
+
+var DONOR_SHEET_HEADERS = [
+  'Booked At',
+  'Name',
+  'Age',
+  'Gender',
+  'Phone',
+  'Email',
+  'Donation Date',
+  'Time',
+  'Hospital',
+  'Previous Donor',
+  'Notes',
+  'Follow-up Status',
+  'Admin Notes'
+];
 
 function doPost(e) {
   return handleRequest_(e);
@@ -30,6 +52,7 @@ function handleRequest_(e) {
     validatePayload_(data);
     sendDonorConfirmation_(data);
     notifyClinic_(data);
+    logBookingToSheet_(data);
 
     return jsonResponse_({ status: 'success' });
   } catch (err) {
@@ -122,6 +145,7 @@ function notifyClinic_(data) {
   var clinicEmail = Session.getActiveUser().getEmail();
   if (!clinicEmail) return;
 
+  var sheetUrl = getDonorSheetUrl_();
   var subject = 'New donation booking — ' + data.name + ' (' + data.dateLabel + ')';
   var body = [
     'A new blood donation booking was submitted.',
@@ -135,12 +159,92 @@ function notifyClinic_(data) {
     'Time: ' + data.time,
     'Hospital: ' + data.hospital,
     'Previous donor: ' + (data.previous || '—'),
-    'Notes: ' + (data.notes || '—')
+    'Notes: ' + (data.notes || '—'),
+    '',
+    sheetUrl ? 'View all bookings: ' + sheetUrl : 'Admin sheet: run setupDonorSheet() in Apps Script to create the donor log.'
   ].join('\n');
 
   GmailApp.sendEmail(clinicEmail, subject, body, {
     name: 'Blood Donation App'
   });
+}
+
+/**
+ * Run once from the Apps Script editor to create the admin Google Sheet.
+ * Check View → Logs for the sheet URL after running.
+ */
+function setupDonorSheet() {
+  var sheet = createDonorSheet_();
+  var url = sheet.getParent().getUrl();
+  Logger.log('Donor sheet ready: ' + url);
+  return url;
+}
+
+function logBookingToSheet_(data) {
+  var sheet = getDonorSheet_();
+  sheet.appendRow([
+    Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'),
+    data.name || '',
+    data.age || '',
+    data.gender || '',
+    data.phone || '',
+    data.email || '',
+    data.dateLabel || '',
+    data.time || '',
+    data.hospital || '',
+    data.previous || '',
+    data.notes || '',
+    'Pending',
+    ''
+  ]);
+}
+
+function getDonorSheet_() {
+  var props = PropertiesService.getScriptProperties();
+  var sheetId = props.getProperty(SHEET_ID_KEY);
+
+  if (sheetId) {
+    try {
+      var existing = SpreadsheetApp.openById(sheetId).getSheetByName(DONOR_SHEET_TAB);
+      if (existing) return existing;
+    } catch (err) {
+      // Sheet was deleted — create a new one below.
+    }
+  }
+
+  return createDonorSheet_();
+}
+
+function createDonorSheet_() {
+  var ss = SpreadsheetApp.create(DONOR_SHEET_NAME);
+  var sheet = ss.getActiveSheet();
+  sheet.setName(DONOR_SHEET_TAB);
+
+  sheet.getRange(1, 1, 1, DONOR_SHEET_HEADERS.length)
+    .setValues([DONOR_SHEET_HEADERS])
+    .setFontWeight('bold')
+    .setBackground('#C8102E')
+    .setFontColor('#FFFFFF');
+
+  sheet.setFrozenRows(1);
+  sheet.autoResizeColumns(1, DONOR_SHEET_HEADERS.length);
+
+  var statusCol = DONOR_SHEET_HEADERS.indexOf('Follow-up Status') + 1;
+  sheet.getRange(2, statusCol, 500, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation()
+      .requireValueInList(['Pending', 'Contacted', 'Confirmed', 'Completed', 'No-show', 'Cancelled'], true)
+      .setAllowInvalid(false)
+      .build()
+  );
+
+  PropertiesService.getScriptProperties().setProperty(SHEET_ID_KEY, ss.getId());
+  return sheet;
+}
+
+function getDonorSheetUrl_() {
+  var sheetId = PropertiesService.getScriptProperties().getProperty(SHEET_ID_KEY);
+  if (!sheetId) return '';
+  return 'https://docs.google.com/spreadsheets/d/' + sheetId + '/edit';
 }
 
 function summaryRow_(label, value) {
