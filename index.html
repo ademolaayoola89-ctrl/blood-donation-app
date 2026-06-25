@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Donation App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --crimson:#C8102E;
+    --crimson-deep:#8B0000;
+    --white:#FFFFFF;
+    --offwhite:#FFF8F8;
+    --ink:#1A1414;
+    --rose-grey:#8C6F6F;
+    --line:#F0DADA;
+    --shadow: 0 10px 30px rgba(139,0,0,0.10);
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--offwhite);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.02em;
+  }
+  button{font-family:inherit; cursor:pointer;}
+  a{color:inherit;}
+
+  /* ===== App shell ===== */
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--white);
+    box-shadow:0 0 60px rgba(139,0,0,0.07);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  @media (min-width:520px){
+    body{padding:24px 0;}
+    #app{min-height:calc(100vh - 48px); border-radius:24px; overflow:hidden;}
+  }
+
+  .view{display:none; flex:1; flex-direction:column;}
+  .view.active{display:flex;}
+
+  /* ===== Top bar (used on non-home views) ===== */
+  .topbar{
+    display:flex; align-items:center; gap:12px;
+    padding:18px 20px;
+    border-bottom:1px solid var(--line);
+    background:var(--white);
+  }
+  .back-btn{
+    width:36px; height:36px; border-radius:50%;
+    border:1.5px solid var(--line);
+    background:var(--white);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--crimson);
+    flex-shrink:0;
+  }
+  .back-btn:active{background:var(--offwhite);}
+  .topbar .title{font-size:1.05rem; font-weight:600;}
+
+  /* ===== HOME VIEW ===== */
+  .home-hero{
+    background:linear-gradient(180deg, var(--crimson) 0%, var(--crimson-deep) 100%);
+    color:var(--white);
+    padding:34px 26px 30px;
+    position:relative;
+    overflow:hidden;
+  }
+  .home-hero .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    opacity:0.85;
+    margin-bottom:14px;
+    display:block;
+  }
+  .home-hero h1{
+    font-size:2.05rem;
+    line-height:1.08;
+    color:var(--white);
+    margin-bottom:6px;
+  }
+  .home-hero p.sub{
+    margin-top:10px;
+    font-size:0.95rem;
+    opacity:0.92;
+    max-width:340px;
+    line-height:1.5;
+  }
+
+  /* Pulse line signature */
+  .pulse-wrap{
+    margin-top:22px;
+    height:54px;
+    width:100%;
+    position:relative;
+  }
+  .pulse-wrap svg{width:100%; height:100%; display:block; overflow:visible;}
+  .pulse-line{
+    fill:none;
+    stroke:#FFFFFF;
+    stroke-width:2.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:520;
+    stroke-dashoffset:520;
+    animation: draw-pulse 2.6s ease-out forwards, pulse-glow 2.6s ease-in-out 2.6s infinite;
+    opacity:0.95;
+  }
+  @keyframes draw-pulse{
+    to{stroke-dashoffset:0;}
+  }
+  @keyframes pulse-glow{
+    0%,100%{opacity:0.55;}
+    50%{opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .pulse-line{animation:none; stroke-dashoffset:0;}
+  }
+
+  .home-body{
+    padding:26px 22px 30px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    flex:1;
+  }
+
+  .action-card{
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    background:var(--white);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    text-align:left;
+    width:100%;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .action-card:active{transform:scale(0.985);}
+
+  .action-card.primary{
+    background:var(--crimson);
+    border-color:var(--crimson);
+    color:var(--white);
+    box-shadow:var(--shadow);
+  }
+  .action-card.primary h2{color:var(--white); font-size:1.3rem;}
+  .action-card.primary p{color:rgba(255,255,255,0.88); margin:0; font-size:0.9rem; line-height:1.5;}
+  .action-card.primary .cta-row{
+    margin-top:6px; display:flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase;
+  }
+
+  .action-card.secondary h2{font-size:1.08rem; color:var(--ink);}
+  .action-card.secondary p{color:var(--rose-grey); margin:0; font-size:0.88rem; line-height:1.5;}
+  .action-card.secondary .cta-row{
+    margin-top:4px; display:flex; align-items:center; gap:8px; color:var(--crimson);
+    font-family:'JetBrains Mono',monospace; font-size:0.76rem; letter-spacing:0.06em; text-transform:uppercase;
+  }
+  .action-card.secondary:active{border-color:var(--crimson);}
+
+  .arrow{display:inline-block; transition:transform .15s ease;}
+  .action-card:active .arrow{transform:translateX(3px);}
+
+  .home-footnote{
+    text-align:center;
+    color:var(--rose-grey);
+    font-size:0.76rem;
+    margin-top:auto;
+    padding-top:10px;
+  }
+
+  /* ===== INFO VIEW ===== */
+  .info-scroll{padding:24px 22px 100px; overflow-y:auto;}
+  .info-hero-line{
+    height:2px; width:48px; background:var(--crimson); margin-bottom:16px; border-radius:2px;
+  }
+  .info-scroll h2{font-size:1.5rem; margin-bottom:10px;}
+  .info-scroll p{line-height:1.65; color:#3a2f2f; font-size:0.95rem;}
+  .stat-row{
+    display:flex; gap:10px; margin:20px 0; flex-wrap:wrap;
+  }
+  .stat-pill{
+    flex:1; min-width:120px;
+    background:var(--offwhite);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 12px;
+    text-align:center;
+  }
+  .stat-pill .num{
+    font-family:'Fraunces',serif; font-weight:700; font-size:1.5rem; color:var(--crimson); display:block;
+  }
+  .stat-pill .lbl{
+    font-size:0.72rem; color:var(--rose-grey); margin-top:2px; display:block;
+    font-family:'JetBrains Mono',monospace; letter-spacing:0.03em;
+  }
+
+  .benefit-list{list-style:none; padding:0; margin:18px 0;}
+  .benefit-list li{
+    display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line);
+  }
+  .benefit-list li:last-child{border-bottom:none;}
+  .benefit-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--crimson); margin-top:7px; flex-shrink:0;
+  }
+  .benefit-list strong{display:block; font-size:0.92rem; margin-bottom:2px;}
+  .benefit-list span{font-size:0.86rem; color:var(--rose-grey); line-height:1.5;}
+
+  .section-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.72rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--crimson);
+    margin:28px 0 12px;
+    display:block;
+  }
+
+  .faq-item{
+    border:1px solid var(--line);
+    border-radius:12px;
+    margin-bottom:10px;
+    overflow:hidden;
+    background:var(--white);
+  }
+  .faq-q{
+    width:100%; text-align:left;
+    padding:14px 16px;
+    background:none; border:none;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:0.9rem; font-weight:600; color:var(--ink);
+    gap:10px;
+  }
+  .faq-q .chev{transition:transform .2s ease; color:var(--crimson); flex-shrink:0;}
+  .faq-item.open .faq-q .chev{transform:rotate(45deg);}
+  .faq-a{
+    max-height:0; overflow:hidden; transition:max-height .25s ease;
+    padding:0 16px;
+  }
+  .faq-a-inner{padding-bottom:14px; font-size:0.86rem; color:var(--rose-grey); line-height:1.6;}
+  .faq-item.open .faq-a{max-height:300px;}
+
+  /* Floating chat launcher */
+  .chat-launcher{
+    position:fixed;
+    bottom:22px;
+    right:calc(50% - 240px + 22px);
+    width:58px; height:58px; border-radius:50%;
+    background:var(--crimson);
+    color:var(--white);
+    border:none;
+    box-shadow:0 8px 24px rgba(139,0,0,0.35);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50;
+  }
+  @media (max-width:520px){
+    .chat-launcher{right:22px;}
+  }
+  .chat-launcher:active{transform:scale(0.94);}
+  .chat-dot{
+    position:absolute; top:8px; right:8px;
+    width:9px; height:9px; border-radius:50%;
+    background:#3DDC84; border:2px solid var(--crimson);
+  }
+
+  /* ===== CHAT VIEW ===== */
+  #view-chat{background:var(--offwhite);}
+  .chat-header{
+    background:var(--crimson); color:var(--white);
+    padding:18px 20px; display:flex; align-items:center; gap:12px;
+  }
+  .chat-header .avatar{
+    width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .chat-header .meta{display:flex; flex-direction:column;}
+  .chat-header .meta .name{font-weight:600; font-size:0.95rem;}
+  .chat-header .meta .status{font-size:0.74rem; opacity:0.85; font-family:'JetBrains Mono',monospace;}
+  .chat-header .back-btn{border-color:rgba(255,255,255,0.4); color:var(--white); background:transparent;}
+
+  .chat-log{
+    flex:1; overflow-y:auto; padding:18px 16px; display:flex; flex-direction:column; gap:10px;
+  }
+  .msg{max-width:80%; padding:10px 14px; border-radius:14px; font-size:0.88rem; line-height:1.5;}
+  .msg.bot{
+    background:var(--white); border:1px solid var(--line); align-self:flex-start;
+    border-bottom-left-radius:4px;
+  }
+  .msg.user{
+    background:var(--crimson); color:var(--white); align-self:flex-end;
+    border-bottom-right-radius:4px;
+  }
+  .quick-replies{display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 10px;}
+  .quick-chip{
+    border:1px solid var(--crimson); color:var(--crimson); background:var(--white);
+    border-radius:20px; padding:7px 13px; font-size:0.78rem; font-weight:500;
+  }
+  .quick-chip:active{background:var(--crimson); color:var(--white);}
+
+  .chat-input-row{
+    display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--line); background:var(--white);
+  }
+  .chat-input-row input{
+    flex:1; border:1.5px solid var(--line); border-radius:22px; padding:11px 16px;
+    font-size:0.9rem; font-family:inherit; outline:none;
+  }
+  .chat-input-row input:focus{border-color:var(--crimson);}
+  .chat-send{
+    width:42px; height:42px; border-radius:50%; background:var(--crimson); color:var(--white);
+    border:none; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .chat-send:active{background:var(--crimson-deep);}
+
+  .typing{display:flex; gap:4px; align-self:flex-start; padding:10px 14px; background:var(--white); border:1px solid var(--line); border-radius:14px;}
+  .typing span{width:6px; height:6px; border-radius:50%; background:var(--rose-grey); animation:bounce 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:0.15s;}
+  .typing span:nth-child(3){animation-delay:0.3s;}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0); opacity:0.5;} 30%{transform:translateY(-4px); opacity:1;}}
+
+  /* ===== FORM VIEW ===== */
+  .form-scroll{padding:22px 22px 40px; overflow-y:auto;}
+  .form-intro{margin-bottom:22px;}
+  .form-intro h2{font-size:1.35rem; margin-bottom:6px;}
+  .form-intro p{color:var(--rose-grey); font-size:0.88rem; line-height:1.5; margin:0;}
+
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block; font-size:0.82rem; font-weight:600; margin-bottom:7px; color:var(--ink);
+  }
+  .field .hint{font-size:0.74rem; color:var(--rose-grey); margin-top:6px; display:block;}
+  .field input, .field select{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px;
+    font-size:0.92rem; font-family:inherit; outline:none; background:var(--white); color:var(--ink);
+  }
+  .field input:focus, .field select:focus{border-color:var(--crimson);}
+  .field input:disabled{background:var(--offwhite); color:var(--rose-grey);}
+  .field-row{display:flex; gap:12px;}
+  .field-row .field{flex:1;}
+
+  .age-display{
+    display:inline-flex; align-items:center; gap:6px; margin-top:8px;
+    background:var(--offwhite); border:1px solid var(--line); border-radius:8px;
+    padding:6px 12px; font-size:0.8rem; color:var(--crimson); font-weight:600;
+  }
+
+  .age-warning{
+    margin-top:8px; font-size:0.78rem; color:var(--crimson-deep); background:#FFEAEA;
+    border:1px solid #F3C8C8; border-radius:8px; padding:8px 12px; display:none;
+  }
+  .age-warning.show{display:block;}
+
+  .submit-btn{
+    width:100%; background:var(--crimson); color:var(--white); border:none;
+    border-radius:12px; padding:16px; font-size:0.98rem; font-weight:600;
+    margin-top:8px; box-shadow:var(--shadow);
+  }
+  .submit-btn:active{background:var(--crimson-deep);}
+  .submit-btn:disabled{background:var(--rose-grey); box-shadow:none;}
+
+  .req-note{
+    font-size:0.76rem; color:var(--rose-grey); text-align:center; margin-top:12px;
+  }
+
+  /* ===== THANK YOU VIEW ===== */
+  .thanks-wrap{
+    flex:1; display:flex; flex-direction:column; align-items:center; text-align:center;
+    padding:50px 26px 40px; background:linear-gradient(180deg, var(--white) 0%, var(--offwhite) 100%);
+  }
+  .thanks-icon{
+    width:84px; height:84px; border-radius:50%; background:var(--crimson);
+    display:flex; align-items:center; justify-content:center; margin-bottom:24px;
+    box-shadow:var(--shadow);
+  }
+  .thanks-wrap h2{font-size:1.6rem; margin-bottom:10px;}
+  .thanks-wrap .name-line{color:var(--crimson); font-weight:600;}
+  .thanks-wrap p.lead{color:var(--rose-grey); font-size:0.92rem; line-height:1.55; max-width:320px; margin:0 0 28px;}
+
+  .summary-card{
+    width:100%; background:var(--white); border:1.5px solid var(--line); border-radius:14px;
+    padding:18px; text-align:left; margin-bottom:26px;
+  }
+  .summary-row{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--line); font-size:0.85rem;}
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .k{color:var(--rose-grey);}
+  .summary-row .v{font-weight:600; text-align:right;}
+
+  .reminders{
+    width:100%; text-align:left; background:#FFF3F3; border:1px solid #F3C8C8;
+    border-radius:14px; padding:18px; margin-bottom:24px;
+  }
+  .reminders .r-title{
+    display:flex; align-items:center; gap:8px; font-weight:700; color:var(--crimson-deep);
+    font-size:0.88rem; margin-bottom:10px;
+  }
+  .reminders ul{margin:0; padding-left:18px; font-size:0.84rem; color:#5a2424; line-height:1.7;}
+
+  .email-status{
+    font-size:0.78rem; color:var(--rose-grey); margin-bottom:18px; display:flex; align-items:center; gap:6px;
+  }
+  .email-status .dot{width:7px; height:7px; border-radius:50%; background:#3DDC84;}
+
+  .done-btn{
+    width:100%; background:var(--white); color:var(--crimson); border:1.5px solid var(--crimson);
+    border-radius:12px; padding:14px; font-weight:600; font-size:0.92rem;
+  }
+  .done-btn:active{background:var(--offwhite);}
+
+  /* Scrollbars (subtle) */
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== HOME VIEW ===================== -->
+  <section class="view active" id="view-home">
+    <div class="home-hero">
+      <span class="eyebrow">Blood Donation App</span>
+      <h1>Give blood.<br>Give another heartbeat.</h1>
+      <p class="sub">One donation can support up to three patients. Choose what you'd like to do below.</p>
+      <div class="pulse-wrap">
+        <svg viewBox="0 0 400 54" preserveAspectRatio="none">
+          <path class="pulse-line" d="M0,27 L60,27 L80,27 L95,8 L110,46 L125,16 L140,27 L160,27 L185,27 L200,27 L215,8 L230,46 L245,16 L260,27 L400,27" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="home-body">
+      <button class="action-card primary" onclick="goTo('view-form')">
+        <h2>I want to donate blood</h2>
+        <p>Book a donation slot in under two minutes.</p>
+        <span class="cta-row">Click here to donate <span class="arrow">→</span></span>
+      </button>
+
+      <button class="action-card primary" onclick="goTo('view-info')">
+        <h2>Want to know more about blood donation?</h2>
+        <p>Why it matters, who can give, and what to expect on the day.</p>
+        <span class="cta-row">Click here to learn more <span class="arrow">→</span></span>
+      </button>
+
+    </div>
+  </section>
+
+  <!-- ===================== INFO / LEARN MORE VIEW ===================== -->
+  <section class="view" id="view-info">
+    <div class="topbar">
+      <button class="back-btn" onclick="goTo('view-home')">←</button>
+      <span class="title">About blood donation</span>
+    </div>
+    <div class="info-scroll">
+      <div class="info-hero-line"></div>
+      <h2>Why your donation matters</h2>
+      <p>Blood cannot be manufactured. Every unit transfused, whether for a mother bleeding after childbirth, a child with severe malaria-related anaemia, an accident victim, or a person with sickle cell disease, comes from someone who chose to give. Hospitals need a steady, willing supply every single day, not only during emergencies.</p>
+
+      <div class="stat-row">
+        <div class="stat-pill"><span class="num">1</span><span class="lbl">DONATION</span></div>
+        <div class="stat-pill"><span class="num">3</span><span class="lbl">LIVES HELPED</span></div>
+      </div>
+
+      <span class="section-label">Benefits of donating</span>
+      <ul class="benefit-list">
+        <li><span class="benefit-dot"></span><div><strong>Free mini health check</strong><span>Every visit includes a check of your haemoglobin, blood pressure, pulse and weight before you donate.</span></div></li>
+        <li><span class="benefit-dot"></span><div><strong>Lowers excess iron stores</strong><span>Regular donation helps reduce excess iron in the blood, which over time supports healthy blood vessels.</span></div></li>
+        <li><span class="benefit-dot"></span><div><strong>Refreshes your blood supply</strong><span>Your body replaces the donated volume with new blood cells, a natural renewal process.</span></div></li>
+        <li><span class="benefit-dot"></span><div><strong>A direct, visible act of good</strong><span>Donated blood is typically used within the same hospital network within days, often for someone you'll never meet.</span></div></li>
+      </ul>
+
+      <span class="section-label">Who can donate</span>
+      <ul class="benefit-list">
+        <li><span class="benefit-dot"></span><div><strong>Age 18 to 60 years</strong><span>Donors should be between 18 and 60 years old and generally in good health.</span></div></li>
+        <li><span class="benefit-dot"></span><div><strong>Weight of 50kg or more</strong><span>This ensures the donation volume is safe relative to your total blood volume.</span></div></li>
+        <li><span class="benefit-dot"></span><div><strong>Generally healthy on the day</strong><span>No fever, cold, recent major surgery, or current pregnancy/breastfeeding.</span></div></li>
+      </ul>
+
+      <span class="section-label">Frequently asked questions</span>
+      <div id="faq-list"></div>
+
+      <span class="section-label">Still have a question?</span>
+      <p style="margin-bottom:6px;">Tap the red chat button in the corner any time — it answers questions about donation, timing, and eligibility immediately.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAT VIEW ===================== -->
+  <section class="view" id="view-chat">
+    <div class="chat-header">
+      <button class="back-btn" onclick="closeChat()">←</button>
+      <div class="avatar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21c-4.5-3-8-7.5-8-11a4.8 4.8 0 0 1 8-3.6A4.8 4.8 0 0 1 20 10c0 3.5-3.5 8-8 11Z" stroke="white" stroke-width="1.8" fill="rgba(255,255,255,0.25)"/></svg>
+      </div>
+      <div class="meta">
+        <span class="name">Donor Assistant</span>
+        <span class="status">● answers in seconds</span>
+      </div>
+    </div>
+    <div class="chat-log" id="chat-log"></div>
+    <div class="quick-replies" id="quick-replies"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask about donation, time, eligibility…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-8-8 18-2-8-8-2Z" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===================== FORM VIEW ===================== -->
+  <section class="view" id="view-form">
+    <div class="topbar">
+      <button class="back-btn" onclick="goTo('view-home')">←</button>
+      <span class="title">Book your donation</span>
+    </div>
+    <div class="form-scroll">
+      <div class="form-intro">
+        <h2>Tell us about you</h2>
+        <p>This takes about two minutes. We'll confirm your slot by email right after you submit.</p>
+      </div>
+
+      <form id="donor-form" novalidate>
+        <div class="field">
+          <label for="f-name">Full name</label>
+          <input type="text" id="f-name" placeholder="e.g. Ademola Oladotun Ayoola" required>
+        </div>
+
+        <div class="field">
+          <label for="f-dob">Date of birth</label>
+          <input type="date" id="f-dob" required onchange="calcAge()">
+          <div class="age-display" id="age-display" style="display:none;">Age: <span id="age-value">–</span></div>
+          <div class="age-warning" id="age-warning">Donors must be between 18 and 60 years old.</div>
+        </div>
+
+        <div class="field">
+          <label for="f-gender">Gender</label>
+          <select id="f-gender" required>
+            <option value="" disabled selected>Select gender</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-phone">Phone number</label>
+          <input type="tel" id="f-phone" placeholder="e.g. 0803 123 4567" required>
+        </div>
+
+        <div class="field">
+          <label for="f-email">Email address</label>
+          <input type="email" id="f-email" placeholder="you@example.com" required>
+          <span class="hint">Your donation confirmation will be sent here immediately.</span>
+        </div>
+
+        <div class="field">
+          <label for="f-date">Date of donation</label>
+          <input type="date" id="f-date" required>
+          <span class="hint">Choose a date within the next 30 days.</span>
+        </div>
+
+        <div class="field">
+          <label for="f-time">Time of donation</label>
+          <select id="f-time" required>
+            <option value="" disabled selected>Select a time slot</option>
+          </select>
+          <span class="hint">Donations are accepted between 8:00am and 3:00pm.</span>
+        </div>
+
+        <div class="field">
+          <label for="f-hospital">Hospital</label>
+          <select id="f-hospital" required>
+            <option value="LASUTH" selected>Lagos State University Teaching Hospital, Ikeja</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-prev">Have you donated blood before?</label>
+          <select id="f-prev">
+            <option value="No" selected>No, this is my first time</option>
+            <option value="Yes">Yes, I've donated before</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-notes">Anything we should know? (optional)</label>
+          <input type="text" id="f-notes" placeholder="e.g. recent illness, medication, allergies">
+        </div>
+
+        <button type="submit" class="submit-btn" id="submit-btn">Submit booking</button>
+        <p class="req-note">By submitting, you confirm the details above are accurate to the best of your knowledge.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== THANK YOU VIEW ===================== -->
+  <section class="view" id="view-thanks">
+    <div class="thanks-wrap">
+      <div class="thanks-icon">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2>Thank you, <span class="name-line" id="thanks-name">friend</span>.</h2>
+      <p class="lead">Your booking is confirmed. A life you'll never meet is already grateful.</p>
+
+      <div class="summary-card">
+        <div class="summary-row"><span class="k">Date</span><span class="v" id="sum-date">–</span></div>
+        <div class="summary-row"><span class="k">Time</span><span class="v" id="sum-time">–</span></div>
+        <div class="summary-row"><span class="k">Location</span><span class="v">LASUTH, Ikeja</span></div>
+        <div class="summary-row"><span class="k">Blood Donor Clinic</span><span class="v">Main Building</span></div>
+      </div>
+
+      <div class="reminders">
+        <div class="r-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="#8B0000" stroke-width="1.8"/></svg>
+          Before you come
+        </div>
+        <ul>
+          <li>Eat a proper meal within 3 hours before donating — don't come on an empty stomach.</li>
+          <li>Drink plenty of water the night before and the morning of your visit.</li>
+          <li>Sleep well the night before; aim for at least 6 hours.</li>
+          <li>Come a little early to complete screening without feeling rushed.</li>
+          <li>Bring a valid ID and wear clothing with sleeves that roll up easily.</li>
+          <li>Avoid alcohol for 24 hours before your appointment.</li>
+        </ul>
+      </div>
+
+      <div class="email-status" id="email-status">
+        <span class="dot"></span> Confirmation email sent to <strong id="email-target-text">your inbox</strong>
+      </div>
+
+      <button class="done-btn" onclick="resetApp()">Done</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- Floating chat launcher (shown on home + info views) -->
+<button class="chat-launcher" id="chat-launcher" onclick="goTo('view-chat')">
+  <span class="chat-dot"></span>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="white" stroke-width="1.7" stroke-linejoin="round"/></svg>
+</button>
+
+<script>
+/* =========================================================
+   NAVIGATION
+========================================================= */
+let lastView = 'view-home';
+
+function goTo(viewId){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  document.getElementById('chat-launcher').style.display =
+    (viewId === 'view-home' || viewId === 'view-info') ? 'flex' : 'none';
+  if(viewId !== 'view-chat') lastView = viewId;
+  window.scrollTo(0,0);
+  if(viewId === 'view-chat' && chatLog.children.length === 0) initChat();
+}
+
+function closeChat(){ goTo(lastView); }
+
+function resetApp(){
+  document.getElementById('donor-form').reset();
+  document.getElementById('age-display').style.display = 'none';
+  document.getElementById('age-warning').classList.remove('show');
+  goTo('view-home');
+}
+
+/* =========================================================
+   FAQ DATA — shared by the Learn More page and the chatbot
+========================================================= */
+const FAQS = [
+  {
+    q: "Who can donate blood?",
+    a: "Most people aged 18–60, weighing at least 50kg, and in general good health can donate. You should not have a fever, active infection, or have had major surgery recently."
+  },
+  {
+    q: "How long does a donation take?",
+    a: "The actual blood draw takes about 8–10 minutes. With registration, screening and a short rest afterward, the full visit usually takes 30–45 minutes."
+  },
+  {
+    q: "Does it hurt?",
+    a: "You'll feel a brief pinch when the needle is inserted, similar to a routine blood test, then little to no discomfort during the donation itself."
+  },
+  {
+    q: "How often can I donate?",
+    a: "After your first donation, you'll need to wait about 3 months before donating again, to give your body enough time to fully replenish."
+  },
+  {
+    q: "What should I do before donating?",
+    a: "Eat a balanced meal within a few hours beforehand, drink extra water, sleep well, and avoid alcohol for 24 hours before your appointment."
+  },
+  {
+    q: "What should I avoid after donating?",
+    a: "Avoid strenuous exercise and heavy lifting for the rest of the day, keep the bandage on for a few hours, and drink extra fluids."
+  },
+  {
+    q: "What time can I come for donation?",
+    a: "Donations at LASUTH Blood Donor Clinic are accepted between 8:00am and 3:00pm. Coming earlier in that window usually means a shorter wait."
+  },
+  {
+    q: "Can I donate if I'm on medication?",
+    a: "It depends on the medication. Many common medications are fine, but some are not. Mention everything you're taking during screening so staff can advise you directly."
+  },
+  {
+    q: "Can women donate during their period?",
+    a: "Yes, in most cases, as long as you feel well and are not experiencing unusually heavy bleeding or anaemia symptoms."
+  },
+  {
+    q: "How much blood is taken?",
+    a: "A standard whole blood donation is about one unit, roughly 450ml, which is a small fraction of total blood volume and is safely replenished by the body."
+  },
+  {
+    q: "Will I know my blood group?",
+    a: "Yes. Your blood group is determined during testing and is usually communicated to you after donation if you don't already know it."
+  },
+  {
+    q: "Is the needle reused?",
+    a: "No. A new, sterile, single-use needle is used for every donor and discarded immediately after your donation."
+  }
+];
+
+function renderFaqList(){
+  const list = document.getElementById('faq-list');
+  list.innerHTML = FAQS.map((item, i)=>`
+    <div class="faq-item" id="faq-${i}">
+      <button class="faq-q" onclick="toggleFaq(${i})">
+        <span>${item.q}</span>
+        <span class="chev">+</span>
+      </button>
+      <div class="faq-a"><div class="faq-a-inner">${item.a}</div></div>
+    </div>
+  `).join('');
+}
+function toggleFaq(i){
+  document.getElementById('faq-'+i).classList.toggle('open');
+}
+renderFaqList();
+
+/* =========================================================
+   CHATBOT
+========================================================= */
+const chatLog = document.getElementById('chat-log');
+const quickRepliesEl = document.getElementById('quick-replies');
+
+const QUICK_TOPICS = [
+  "What time can I donate?",
+  "Who can donate?",
+  "Does it hurt?",
+  "How often can I donate?"
+];
+
+function initChat(){
+  addBotMessage("Hi! I'm the Donor Assistant. Ask me anything about blood donation — timing, eligibility, or what to expect — and I'll answer right away.");
+  renderQuickReplies();
+}
+
+function renderQuickReplies(){
+  quickRepliesEl.innerHTML = QUICK_TOPICS.map(t=>`<button class="quick-chip" onclick="askQuick('${t.replace(/'/g,"\\'")}')">${t}</button>`).join('');
+}
+
+function askQuick(text){
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+function addUserMessage(text){
+  const el = document.createElement('div');
+  el.className = 'msg user';
+  el.textContent = text;
+  chatLog.appendChild(el);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function addBotMessage(text){
+  const el = document.createElement('div');
+  el.className = 'msg bot';
+  el.textContent = text;
+  chatLog.appendChild(el);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function showTyping(){
+  const el = document.createElement('div');
+  el.className = 'typing';
+  el.id = 'typing-indicator';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  chatLog.appendChild(el);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+function hideTyping(){
+  const t = document.getElementById('typing-indicator');
+  if(t) t.remove();
+}
+
+function sendChat(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  addUserMessage(text);
+  input.value = '';
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    addBotMessage(getBotReply(text));
+  }, 500 + Math.random()*350);
+}
+
+function getBotReply(rawText){
+  const text = rawText.toLowerCase();
+
+  // Direct keyword routing to the most urgent / common questions first
+  if(/\b(time|when|hour|8am|8 am|3pm|3 pm|open|close|today|tomorrow)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("time")).a;
+  }
+  if(/\b(who|eligib|age|qualify|weight|kg)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("Who")).a;
+  }
+  if(/\b(hurt|pain|needle|scared|afraid|sting)\b/.test(text)){
+    if(/reuse|sterile|clean|safe needle/.test(text)) return FAQS.find(f=>f.q.includes("needle")).a;
+    return FAQS.find(f=>f.q.includes("hurt")).a;
+  }
+  if(/\b(often|frequen|again|wait|interval|months?|next time|repeat)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("often")).a;
+  }
+  if(/\b(before|prepare|eat|food|meal|drink|sleep)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("before donating")).a;
+  }
+  if(/\b(after|avoid|exercise|lift|following)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("after donating")).a;
+  }
+  if(/\b(long|take|duration|minutes)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("How long")).a;
+  }
+  if(/\b(medic|drug|tablet|pill|prescription)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("medication")).a;
+  }
+  if(/\b(period|menstru|women|woman)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("period")).a;
+  }
+  if(/\b(how much|volume|450|ml|unit)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("How much")).a;
+  }
+  if(/\b(blood group|genotype|o\+|a\+|b\+|ab\+)\b/.test(text)){
+    return FAQS.find(f=>f.q.includes("blood group")).a;
+  }
+  if(/\b(location|where|address|hospital|lasuth|ikeja)\b/.test(text)){
+    return "Donations are currently held at Lagos State University Teaching Hospital (LASUTH), Blood Donor Clinic, Ikeja, Lagos — open daily from 8:00am to 3:00pm.";
+  }
+  if(/\b(book|appointment|register|sign up|donate now)\b/.test(text)){
+    return "You can book directly from the home screen — tap \"I want to donate blood\" and fill in your details. It takes about two minutes.";
+  }
+  if(/\b(thank|thanks|appreciate)\b/.test(text)){
+    return "You're very welcome! Thank you for considering something that genuinely saves lives.";
+  }
+  if(/\b(hi|hello|hey)\b/.test(text)){
+    return "Hello! Ask me anything about blood donation — eligibility, timing, what to expect, or how to prepare.";
+  }
+
+  // Fuzzy fallback: try to match against FAQ question words
+  let best = null, bestScore = 0;
+  FAQS.forEach(f=>{
+    const words = f.q.toLowerCase().split(/\W+/).filter(w=>w.length>3);
+    let score = 0;
+    words.forEach(w=>{ if(text.includes(w)) score++; });
+    if(score > bestScore){ bestScore = score; best = f; }
+  });
+  if(best && bestScore > 0) return best.a;
+
+  return "I don't have an exact answer for that yet, but for anything urgent please speak with staff at the LASUTH Blood Donor Clinic directly. You can also try asking about timing, eligibility, what to expect, or how to prepare.";
+}
+
+/* =========================================================
+   FORM: DATE / TIME OPTIONS
+========================================================= */
+function setDateBounds(){
+  const input = document.getElementById('f-date');
+  const today = new Date();
+
+  const minDate = new Date(today);
+  minDate.setDate(today.getDate() + 1);
+
+  const maxDate = new Date(today);
+  maxDate.setDate(today.getDate() + 30);
+
+  input.min = minDate.toISOString().split('T')[0];
+  input.max = maxDate.toISOString().split('T')[0];
+}
+setDateBounds();
+
+function formatDateLabel(dateVal){
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d = new Date(dateVal + 'T00:00:00');
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function populateTimes(){
+  const sel = document.getElementById('f-time');
+  for(let h=8; h<=15; h++){
+    const label = formatHour(h);
+    const opt = document.createElement('option');
+    opt.value = label;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  }
+}
+function formatHour(h){
+  if(h === 12) return '12pm';
+  if(h > 12) return `${h-12}pm`;
+  return `${h}am`;
+}
+populateTimes();
+
+/* =========================================================
+   FORM: AGE CALCULATION
+========================================================= */
+function calcAge(){
+  const dobVal = document.getElementById('f-dob').value;
+  const display = document.getElementById('age-display');
+  const ageValEl = document.getElementById('age-value');
+  const warning = document.getElementById('age-warning');
+
+  if(!dobVal){ display.style.display='none'; warning.classList.remove('show'); return; }
+
+  const dob = new Date(dobVal);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if(monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())){
+    age--;
+  }
+
+  ageValEl.textContent = age + (age === 1 ? ' year' : ' years');
+  display.style.display = 'inline-flex';
+
+  if(age < 18 || age > 60){
+    warning.classList.add('show');
+  } else {
+    warning.classList.remove('show');
+  }
+}
+
+/* =========================================================
+   FORM: SUBMIT
+========================================================= */
+document.getElementById('donor-form').addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const dobVal = document.getElementById('f-dob').value;
+  const dob = new Date(dobVal);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if(monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+
+  if(age < 18 || age > 60){
+    alert("We're sorry — donors must be between 18 and 60 years old. Thank you for your willingness to help.");
+    return;
+  }
+
+  const dateVal = document.getElementById('f-date').value;
+  if(!dateVal){
+    alert("Please select a date of donation.");
+    return;
+  }
+
+  const data = {
+    name: document.getElementById('f-name').value.trim(),
+    dob: dobVal,
+    age: age,
+    gender: document.getElementById('f-gender').value,
+    phone: document.getElementById('f-phone').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    date: dateVal,
+    dateLabel: formatDateLabel(dateVal),
+    time: document.getElementById('f-time').value,
+    hospital: "Lagos State University Teaching Hospital, Ikeja",
+    previous: document.getElementById('f-prev').value,
+    notes: document.getElementById('f-notes').value.trim()
+  };
+
+  showThankYou(data);
+  sendConfirmationEmail(data);
+});
+
+/* =========================================================
+   THANK YOU PAGE
+========================================================= */
+function showThankYou(data){
+  document.getElementById('thanks-name').textContent = data.name.split(' ')[0] || 'friend';
+  document.getElementById('sum-date').textContent = data.dateLabel;
+  document.getElementById('sum-time').textContent = data.time;
+  document.getElementById('email-target-text').textContent = data.email;
+  goTo('view-thanks');
+}
+
+/* =========================================================
+   EMAIL CONFIRMATION (Google Apps Script)
+   ---------------------------------------------------------
+   This sends the confirmation email through a Google Apps
+   Script Web App that runs under your own Gmail account.
+   It calls GmailApp.sendEmail() on Google's servers, so the
+   email is genuinely sent from your Gmail, with no
+   third-party email service involved.
+
+   To activate it:
+   1. Follow README.md → "Email setup (Google Apps Script)"
+      and paste google-apps-script/Code.gs into a new project.
+   2. Deploy as a Web App (Execute as: Me, access: Anyone).
+   3. Copy the deployment URL (ends in /exec) into GAS_WEB_APP_URL.
+========================================================= */
+const GAS_WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+
+function sendConfirmationEmail(data){
+  const statusEl = document.getElementById('email-status');
+
+  const configured = GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+
+  if(!configured){
+    console.warn("Google Apps Script is not configured yet. Paste your deployment URL into GAS_WEB_APP_URL at the top of the script to send real emails.");
+    statusEl.innerHTML = `<span class="dot" style="background:#E0B400;"></span> Email not yet configured — see setup note`;
+    return;
+  }
+
+  statusEl.innerHTML = `<span class="dot" style="background:#E0B400;"></span> Sending confirmation email…`;
+
+  fetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids a CORS preflight on Apps Script
+    body: JSON.stringify({
+      name: data.name,
+      age: data.age,
+      gender: data.gender,
+      phone: data.phone,
+      email: data.email,
+      dateLabel: data.dateLabel,
+      time: data.time,
+      hospital: data.hospital,
+      previous: data.previous,
+      notes: data.notes
+    })
+  })
+    .then(res => res.json())
+    .then(result => {
+      if(result && result.status === "success"){
+        statusEl.innerHTML = `<span class="dot"></span> Confirmation email sent to <strong>${data.email}</strong>`;
+      } else {
+        throw new Error(result && result.message ? result.message : "Unknown error");
+      }
+    })
+    .catch((err)=>{
+      console.error("Google Apps Script email error:", err);
+      statusEl.innerHTML = `<span class="dot" style="background:#C8102E;"></span> Couldn't send the email automatically — please save your details above`;
+    });
+}
+</script>
+
+</body>
+</html>
