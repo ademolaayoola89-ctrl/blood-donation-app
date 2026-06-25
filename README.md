@@ -124,6 +124,34 @@ Error response:
 { "status": "error", "message": "..." }
 ```
 
+### Auto mode (automatic booking)
+
+The backend supports an "auto" booking mode that will select the next available date and time slot within the next 30 days and create the booking automatically. This is useful when you only collect minimal donor info and want the server to assign an available slot.
+
+Request example (POST JSON):
+
+```json
+{ "auto": true, "name": "Jane Doe", "email": "jane@example.com", "phone": "0803 123 4567" }
+```
+
+Successful response includes the assigned booking:
+
+```json
+{
+  "status": "success",
+  "booking": {
+    "date": "2026-07-01",
+    "dateLabel": "Thu, 1 Jul 2026",
+    "time": "8am",
+    "hospital": "Lagos State University Teaching Hospital, Ikeja"
+  }
+}
+```
+
+Notes:
+- Auto mode requires only `name` and `email` (phone is optional).
+- The Apps Script `Code.gs` file enforces a per-slot capacity when assigning a time.
+
 ## Project structure
 
 ```

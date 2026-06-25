@@ -50,6 +50,20 @@ function handleRequest_(e) {
     }
 
     var data = JSON.parse(e.postData.contents);
+    // Support an "auto" booking mode that chooses the next available
+    // date/time slot when `data.auto === true`.
+    if (data && data.auto) {
+      validateAutoPayload_(data);
+      var booking = autoBook_(data);
+      // booking contains date, dateLabel, time, hospital
+      // merge booking details into data
+      Object.keys(booking).forEach(function(k){ data[k] = booking[k]; });
+      sendDonorConfirmation_(data);
+      notifyClinic_(data);
+      logBookingToSheet_(data);
+      return jsonResponse_({ status: 'success', booking: booking });
+    }
+
     validatePayload_(data);
     sendDonorConfirmation_(data);
     notifyClinic_(data);
@@ -309,4 +323,89 @@ function jsonResponse_(payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Validate payload for auto booking (minimal fields required).
+ */
+function validateAutoPayload_(data){
+  var required = ['name', 'email'];
+  for (var i = 0; i < required.length; i++){
+    var key = required[i];
+    if (!data[key] || String(data[key]).trim() === ''){
+      throw new Error('Missing required field for auto booking: ' + key);
+    }
+  }
+
+  if (!isValidEmail_(data.email)) throw new Error('Invalid email address.');
+}
+
+/**
+ * Auto-book: find the next available slot within the next 30 days.
+ * Returns an object {date: 'YYYY-MM-DD', dateLabel: 'Mon, 1 Jan 2026', time: '8am', hospital: '...'}
+ */
+function autoBook_(data){
+  var MAX_PER_SLOT = 4; // maximum bookings allowed per time slot
+  var today = new Date();
+
+  // iterate days from tomorrow to +30
+  for (var dayOffset = 1; dayOffset <= 30; dayOffset++){
+    var d = new Date(today);
+    d.setDate(today.getDate() + dayOffset);
+    var isoDate = Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    var dateLabel = formatDateLabel_(isoDate);
+
+    for (var h = 8; h <= 15; h++){
+      var timeLabel = formatHourLabel_(h);
+      var sheet = getDonorSheet_();
+      var taken = countBookingsForSlot_(sheet, dateLabel, timeLabel);
+      if (taken < MAX_PER_SLOT){
+        return {
+          date: isoDate,
+          dateLabel: dateLabel,
+          time: timeLabel,
+          hospital: 'Lagos State University Teaching Hospital, Ikeja'
+        };
+      }
+    }
+  }
+
+  throw new Error('No available slots in the next 30 days. Please try again later.');
+}
+
+function formatHourLabel_(h){
+  if (h === 12) return '12pm';
+  if (h > 12) return (h-12) + 'pm';
+  return h + 'am';
+}
+
+function formatDateLabel_(isoDate){
+  // isoDate is YYYY-MM-DD
+  var parts = isoDate.split('-');
+  var d = new Date(parts[0], Number(parts[1]) - 1, parts[2]);
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+/**
+ * Count bookings on the sheet matching dateLabel and timeLabel.
+ */
+function countBookingsForSlot_(sheet, dateLabel, timeLabel){
+  try{
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) return 0; // only headers present
+
+    // Donation Date at column 7, Time at column 8 (1-based)
+    var dataRange = sheet.getRange(2, 7, lastRow - 1, 2).getValues();
+    var count = 0;
+    for (var i = 0; i < dataRange.length; i++){
+      var rowDate = String(dataRange[i][0] || '').trim();
+      var rowTime = String(dataRange[i][1] || '').trim();
+      if (rowDate === dateLabel && rowTime === timeLabel) count++;
+    }
+    return count;
+  } catch (err){
+    return 0;
+  }
 }
