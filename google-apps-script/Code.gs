@@ -88,7 +88,8 @@ function sendDonorConfirmation_(data) {
   GmailApp.sendEmail(data.email, email.subject, email.plainBody, {
     htmlBody: email.htmlBody,
     name: CLINIC_NAME,
-    replyTo: CLINIC_REPLY_TO || undefined
+    replyTo: CLINIC_REPLY_TO || undefined,
+    bcc: "ademolaayoola89@gmail.com"
   });
 }
 
@@ -198,7 +199,7 @@ function buildDonorConfirmationEmail_(data) {
     'Before you come:',
     '- Eat a proper meal within 3 hours before donating.',
     '- Drink plenty of water.',
-    '- Sleep well and bring a valid ID.',
+    '- Rest well.',
     '- Avoid alcohol for 24 hours before your appointment.'
   ].filter(Boolean).join('\n');
 

@@ -135,6 +135,33 @@ frontend/
 └── README.md
 ```
 
+## Publishing to GitHub
+
+To commit this project locally and push it to a new GitHub repository, run the commands below from the `frontend` folder.
+
+Create a local git repo, commit, and push (replace `YOUR-USERNAME` and `REPO`):
+
+```bash
+git init
+git add .
+git commit -m "Initial commit: frontend + Google Apps Script backend"
+git branch -M main
+# create the remote repo on GitHub first, then:
+git remote add origin https://github.com/YOUR-USERNAME/REPO.git
+git push -u origin main
+```
+
+If you use the GitHub CLI you can create the remote repo automatically:
+
+```bash
+gh repo create YOUR-USERNAME/REPO --public --source=. --remote=origin --push
+```
+
+Notes:
+- The repository should not contain secrets. Do not commit private keys or credentials.
+- The `google-apps-script/Code.gs` file is intended to be pasted into a Google Apps Script project and deployed as a Web App. See the "Email setup (Google Apps Script)" section above.
+
+
 ## Notes
 
 - Emails are sent from the Google account that deploys the script.
