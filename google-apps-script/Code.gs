@@ -99,12 +99,15 @@ function isValidEmail_(email) {
 function sendDonorConfirmation_(data) {
   var email = buildDonorConfirmationEmail_(data);
 
-  GmailApp.sendEmail(data.email, email.subject, email.plainBody, {
+  var options = {
     htmlBody: email.htmlBody,
-    name: CLINIC_NAME,
-    replyTo: CLINIC_REPLY_TO || undefined,
-    bcc: "ademolaayoola89@gmail.com"
-  });
+    name: CLINIC_NAME
+  };
+  if (CLINIC_REPLY_TO) {
+    options.replyTo = CLINIC_REPLY_TO;
+  }
+
+  GmailApp.sendEmail(data.email, email.subject, email.plainBody, options);
 }
 
 function notifyClinic_(data) {

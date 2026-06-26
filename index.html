@@ -116,6 +116,18 @@
     position:relative;
     overflow:hidden;
   }
+  .home-hero .hero-highlights{
+    display:grid;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .home-hero .hero-highlights strong{
+    display:block;
+    font-size:0.92rem;
+    line-height:1.4;
+    color:rgba(255,255,255,0.97);
+    font-weight:700;
+  }
   .home-hero .eyebrow{
     font-family:'JetBrains Mono', monospace;
     font-size:0.72rem;
@@ -484,7 +496,12 @@
   <!-- ===================== HOME VIEW ===================== -->
   <section class="view active" id="view-home">
     <div class="home-hero">
-      <span class="eyebrow">Blood Donation App</span>
+      <div class="hero-highlights">
+        <strong>1. Book a donation slot in under two minutes.</strong>
+        <strong>2. Click here to donate.</strong>
+        <strong>3. Why it matters, who can give blood and what to expect.</strong>
+        <strong>4. Click here to donate.</strong>
+      </div>
       <h1>Give blood.<br>Give another heartbeat.</h1>
       <p class="sub">One donation can support up to three patients. Choose what you'd like to do below.</p>
       <div class="pulse-wrap">
@@ -503,8 +520,8 @@
 
       <button class="action-card primary" onclick="goTo('view-info')">
         <h2>Want to know more about blood donation?</h2>
-        <p>Why it matters, who can give, and what to expect on the day.</p>
-        <span class="cta-row">Click here to learn more <span class="arrow">→</span></span>
+        <p>Why it matters, who can give blood, and what to expect.</p>
+        <span class="cta-row">Click here to donate <span class="arrow">→</span></span>
       </button>
 
     </div>
@@ -734,7 +751,7 @@ function resetApp(){
 const FAQS = [
   {
     q: "Who can donate blood?",
-    a: "Most people aged 18–60, weighing at least 50kg, and in general good health can donate. You should not have a fever, active infection, or have had major surgery recently."
+    a: "Donor must be physically and mentally fit as at the time of donation."
   },
   {
     q: "How long does a donation take?",
@@ -806,10 +823,10 @@ const chatLog = document.getElementById('chat-log');
 const quickRepliesEl = document.getElementById('quick-replies');
 
 const QUICK_TOPICS = [
-  "What time can I donate?",
-  "Who can donate?",
-  "Does it hurt?",
-  "How often can I donate?"
+  "Book a donation slot under 2 minutes.",
+  "Click here to donate.",
+  "Why it matters who can give blood and what to expect.",
+  "Click here to donate."
 ];
 
 function initChat(){
