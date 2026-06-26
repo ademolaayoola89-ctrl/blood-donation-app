@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#C8102E">
+<meta name="theme-color" content="#E45B6C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Blood Donation App">
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,15 +12,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --crimson:#C8102E;
-    --crimson-deep:#8B0000;
+    --crimson:#E45B6C;
+    --crimson-deep:#B9464E;
     --white:#FFFFFF;
-    --offwhite:#FFF8F8;
+    --offwhite:#FFF4F5;
     --ink:#1A1414;
     --rose-grey:#8C6F6F;
-    --line:#F0DADA;
-    --shadow: 0 10px 30px rgba(139,0,0,0.10);
+    --line:#F5DBDE;
+    --shadow: 0 10px 30px rgba(228,91,108,0.12);
     --radius:16px;
+    --chat-blue:#1D6FCC;
+    --chat-blue-soft:#E6F0FF;
   }
 
   *{box-sizing:border-box;}
@@ -108,7 +110,7 @@
 
   /* ===== HOME VIEW ===== */
   .home-hero{
-    background:linear-gradient(180deg, var(--crimson) 0%, var(--crimson-deep) 100%);
+    background:linear-gradient(180deg, rgba(228,91,108,0.95) 0%, rgba(185,72,78,0.96) 100%);
     color:var(--white);
     padding:34px 26px 30px;
     position:relative;
@@ -173,6 +175,14 @@
     flex-direction:column;
     gap:16px;
     flex:1;
+  }
+
+  .home-footnote{
+    text-align:center;
+    color:var(--rose-grey);
+    font-size:0.76rem;
+    margin-top:auto;
+    padding-top:10px;
   }
 
   .action-card{
@@ -253,7 +263,7 @@
   }
   .benefit-list li:last-child{border-bottom:none;}
   .benefit-dot{
-    width:7px; height:7px; border-radius:50%; background:var(--crimson); margin-top:7px; flex-shrink:0;
+    width:7px; height:7px; border-radius:50%; background:var(--chat-blue); margin-top:7px; flex-shrink:0;
   }
   .benefit-list strong{display:block; font-size:0.92rem; margin-bottom:2px;}
   .benefit-list span{font-size:0.86rem; color:var(--rose-grey); line-height:1.5;}
@@ -263,7 +273,7 @@
     font-size:0.72rem;
     letter-spacing:0.1em;
     text-transform:uppercase;
-    color:var(--crimson);
+    color:var(--chat-blue);
     margin:28px 0 12px;
     display:block;
   }
@@ -283,7 +293,7 @@
     font-size:0.9rem; font-weight:600; color:var(--ink);
     gap:10px;
   }
-  .faq-q .chev{transition:transform .2s ease; color:var(--crimson); flex-shrink:0;}
+  .faq-q .chev{transition:transform .2s ease; color:var(--chat-blue); flex-shrink:0;}
   .faq-item.open .faq-q .chev{transform:rotate(45deg);}
   .faq-a{
     max-height:0; overflow:hidden; transition:max-height .25s ease;
@@ -298,10 +308,10 @@
     bottom:22px;
     right:calc(50% - 240px + 22px);
     width:58px; height:58px; border-radius:50%;
-    background:var(--crimson);
+    background:var(--chat-blue);
     color:var(--white);
     border:none;
-    box-shadow:0 8px 24px rgba(139,0,0,0.35);
+    box-shadow:0 10px 26px rgba(29,111,204,0.25);
     display:flex; align-items:center; justify-content:center;
     z-index:50;
   }
@@ -312,13 +322,14 @@
   .chat-dot{
     position:absolute; top:8px; right:8px;
     width:9px; height:9px; border-radius:50%;
-    background:#3DDC84; border:2px solid var(--crimson);
+    background:#FFFFFF; border:2px solid rgba(255,255,255,0.45);
   }
 
   /* ===== CHAT VIEW ===== */
   #view-chat{background:var(--offwhite);}
   .chat-header{
-    background:var(--crimson); color:var(--white);
+    background:var(--chat-blue);
+    color:var(--white);
     padding:18px 20px; display:flex; align-items:center; gap:12px;
   }
   .chat-header .avatar{
@@ -339,15 +350,19 @@
     border-bottom-left-radius:4px;
   }
   .msg.user{
-    background:var(--crimson); color:var(--white); align-self:flex-end;
+    background:var(--chat-blue);
+    color:var(--white);
+    align-self:flex-end;
     border-bottom-right-radius:4px;
   }
   .quick-replies{display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 10px;}
   .quick-chip{
-    border:1px solid var(--crimson); color:var(--crimson); background:var(--white);
+    border:1px solid var(--chat-blue);
+    color:var(--chat-blue);
+    background:var(--white);
     border-radius:20px; padding:7px 13px; font-size:0.78rem; font-weight:500;
   }
-  .quick-chip:active{background:var(--crimson); color:var(--white);}
+  .quick-chip:active{background:var(--chat-blue); color:var(--white);}
 
   .chat-input-row{
     display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--line); background:var(--white);
@@ -356,12 +371,12 @@
     flex:1; border:1.5px solid var(--line); border-radius:22px; padding:11px 16px;
     font-size:0.9rem; font-family:inherit; outline:none;
   }
-  .chat-input-row input:focus{border-color:var(--crimson);}
+  .chat-input-row input:focus{border-color:var(--chat-blue);}
   .chat-send{
-    width:42px; height:42px; border-radius:50%; background:var(--crimson); color:var(--white);
+    width:42px; height:42px; border-radius:50%; background:var(--chat-blue); color:var(--white);
     border:none; display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
-  .chat-send:active{background:var(--crimson-deep);}
+  .chat-send:active{background:#154e95;}
 
   .typing{display:flex; gap:4px; align-self:flex-start; padding:10px 14px; background:var(--white); border:1px solid var(--line); border-radius:14px;}
   .typing span{width:6px; height:6px; border-radius:50%; background:var(--rose-grey); animation:bounce 1.2s infinite;}
@@ -384,7 +399,7 @@
     width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px;
     font-size:0.92rem; font-family:inherit; outline:none; background:var(--white); color:var(--ink);
   }
-  .field input:focus, .field select:focus{border-color:var(--crimson);}
+  .field input:focus, .field select:focus{border-color:var(--chat-blue);}
   .field input:disabled{background:var(--offwhite); color:var(--rose-grey);}
   .field-row{display:flex; gap:12px;}
   .field-row .field{flex:1;}
@@ -392,21 +407,21 @@
   .age-display{
     display:inline-flex; align-items:center; gap:6px; margin-top:8px;
     background:var(--offwhite); border:1px solid var(--line); border-radius:8px;
-    padding:6px 12px; font-size:0.8rem; color:var(--crimson); font-weight:600;
+    padding:6px 12px; font-size:0.8rem; color:var(--chat-blue); font-weight:600;
   }
 
   .age-warning{
-    margin-top:8px; font-size:0.78rem; color:var(--crimson-deep); background:#FFEAEA;
-    border:1px solid #F3C8C8; border-radius:8px; padding:8px 12px; display:none;
+    margin-top:8px; font-size:0.78rem; color:#154e95; background:#E8F1FF;
+    border:1px solid #c3ddff; border-radius:8px; padding:8px 12px; display:none;
   }
   .age-warning.show{display:block;}
 
   .submit-btn{
-    width:100%; background:var(--crimson); color:var(--white); border:none;
+    width:100%; background:var(--chat-blue); color:var(--white); border:none;
     border-radius:12px; padding:16px; font-size:0.98rem; font-weight:600;
-    margin-top:8px; box-shadow:var(--shadow);
+    margin-top:8px; box-shadow:0 18px 34px rgba(29,111,204,0.16);
   }
-  .submit-btn:active{background:var(--crimson-deep);}
+  .submit-btn:active{background:#154e95;}
   .submit-btn:disabled{background:var(--rose-grey); box-shadow:none;}
 
   .req-note{
@@ -437,14 +452,14 @@
   .summary-row .v{font-weight:600; text-align:right;}
 
   .reminders{
-    width:100%; text-align:left; background:#FFF3F3; border:1px solid #F3C8C8;
+    width:100%; text-align:left; background:var(--chat-blue-soft); border:1px solid #c8ddff;
     border-radius:14px; padding:18px; margin-bottom:24px;
   }
   .reminders .r-title{
-    display:flex; align-items:center; gap:8px; font-weight:700; color:var(--crimson-deep);
+    display:flex; align-items:center; gap:8px; font-weight:700; color:#154e95;
     font-size:0.88rem; margin-bottom:10px;
   }
-  .reminders ul{margin:0; padding-left:18px; font-size:0.84rem; color:#5a2424; line-height:1.7;}
+  .reminders ul{margin:0; padding-left:18px; font-size:0.84rem; color:#3f4f6c; line-height:1.7;}
 
   .email-status{
     font-size:0.78rem; color:var(--rose-grey); margin-bottom:18px; display:flex; align-items:center; gap:6px;
@@ -452,7 +467,7 @@
   .email-status .dot{width:7px; height:7px; border-radius:50%; background:#3DDC84;}
 
   .done-btn{
-    width:100%; background:var(--white); color:var(--crimson); border:1.5px solid var(--crimson);
+    width:100%; background:var(--white); color:var(--chat-blue); border:1.5px solid var(--chat-blue);
     border-radius:12px; padding:14px; font-weight:600; font-size:0.92rem;
   }
   .done-btn:active{background:var(--offwhite);}
@@ -530,7 +545,7 @@
       <div id="faq-list"></div>
 
       <span class="section-label">Still have a question?</span>
-      <p style="margin-bottom:6px;">Tap the red chat button in the corner any time — it answers questions about donation, timing, and eligibility immediately.</p>
+      <p style="margin-bottom:6px;">Tap the chat button in the corner any time — it answers questions about donation, timing, and eligibility immediately.</p>
     </div>
   </section>
 
@@ -659,15 +674,15 @@
 
       <div class="reminders">
         <div class="r-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="#8B0000" stroke-width="1.8"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="#1D6FCC" stroke-width="1.8"/></svg>
           Before you come
         </div>
         <ul>
           <li>Eat a proper meal within 3 hours before donating — don't come on an empty stomach.</li>
           <li>Drink plenty of water the night before and the morning of your visit.</li>
-          <li>Sleep well the night before; aim for at least 6 hours.</li>
+          <li>Rest well before coming.</li>
           <li>Come a little early to complete screening without feeling rushed.</li>
-          <li>Bring a valid ID and wear clothing with sleeves that roll up easily.</li>
+          <li>Wear clothing with sleeves that roll up easily.</li>
           <li>Avoid alcohol for 24 hours before your appointment.</li>
         </ul>
       </div>
