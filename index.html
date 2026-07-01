@@ -120,17 +120,23 @@
   /* ===== SPLASH: drop + burst ===== */
   .splash-screen{position:fixed; inset:0; z-index:130; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at center, rgba(255,255,255,0.0), rgba(255,255,255,0.0));}
   .splash-inner{display:flex; flex-direction:column; align-items:center; gap:14px; padding:0 20px; text-align:center}
-  #splash-drop-svg{width:180px; height:220px; overflow:visible}
-  #drop-path{ transform-origin:80px 100px; filter:drop-shadow(0 18px 40px rgba(200,16,46,0.28)); }
-  #burst-rays{ transform-origin:80px 110px; opacity:0; }
-  #splash-drop-svg #drop-path{ animation:dropFall 850ms cubic-bezier(.2,.9,.3,1) forwards, dropBounce 700ms ease-out 900ms forwards }
+  #splash-drop-svg{width:190px; height:230px; overflow:visible}
+  #glow-ring{transform-origin:80px 110px; filter:blur(14px); opacity:0;}
+  #drop-path{transform-origin:80px 100px; filter:drop-shadow(0 18px 45px rgba(200,16,46,0.34));}
+  #burst-rays{transform-origin:80px 110px; opacity:0;}
+  #sparkles{opacity:0;}
+  .spark{fill:#FFB3B8; opacity:0;}
+  #splash-drop-svg #drop-path{animation:dropFall 850ms cubic-bezier(.2,.9,.3,1) forwards, dropBounce 750ms ease-out 900ms forwards}
   @keyframes dropFall{0%{transform:translateY(-42vh) scale(0.45); opacity:0} 60%{opacity:1} 100%{transform:translateY(0) scale(1);}}
-  @keyframes dropBounce{0%{transform:translateY(0) scaleY(1)} 34%{transform:translateY(-10px) scaleY(0.9)} 66%{transform:translateY(2px) scaleY(1.05)} 100%{transform:translateY(0) scaleY(1)}}
-  .splash-title{font-family:'Fraunces', serif; font-size:2.8rem; color:var(--crimson); font-weight:900; opacity:0; transform:translateY(18px) scale(0.96); letter-spacing:0.02em;}
-  @keyframes titleIn{0%{opacity:0; transform:translateY(18px) scale(0.96)} 100%{opacity:1; transform:translateY(0) scale(1)}}
-  /* burst rays animation */
-  @keyframes raysOut{0%{opacity:0; transform:scale(0.6)} 20%{opacity:1; transform:scale(1)} 100%{opacity:0; transform:scale(1.5)}}
-  .splash-title.animate{animation:titleIn 900ms ease-out forwards;}
+  @keyframes dropBounce{0%{transform:translateY(0) scaleY(1)} 34%{transform:translateY(-10px) scaleY(0.92)} 66%{transform:translateY(2px) scaleY(1.03)} 100%{transform:translateY(0) scaleY(1)}}
+  .splash-title{font-family:'Fraunces', serif; font-size:3rem; color:var(--crimson); font-weight:900; opacity:0; transform:translateY(24px) scale(0.96); letter-spacing:0.04em; filter:drop-shadow(0 0 0 rgba(200,16,46,0));}
+  @keyframes titleIn{0%{opacity:0; transform:translateY(24px) scale(0.96); filter:drop-shadow(0 0 0 rgba(200,16,46,0))} 100%{opacity:1; transform:translateY(0) scale(1); filter:drop-shadow(0 0 22px rgba(200,16,46,0.35))}}
+  /* glow and sparkle */
+  @keyframes glowPulse{0%{opacity:0; transform:scale(0.65)} 40%{opacity:0.7; transform:scale(1.05)} 100%{opacity:0.22; transform:scale(1.35)}}
+  @keyframes sparkleBurst{0%{opacity:0; transform:scale(0.7)} 25%{opacity:1; transform:scale(1)} 100%{opacity:0; transform:scale(1.4)}}
+  @keyframes raysOut{0%{opacity:0; transform:scale(0.6)} 30%{opacity:1; transform:scale(1)} 100%{opacity:0; transform:scale(1.75)}}
+  .spark.animate{animation:sparkleBurst 1200ms ease-out forwards;}
+  .splash-title.animate{animation:titleIn 1000ms ease-out forwards;}
   .splash-screen.hide{opacity:0; visibility:hidden; pointer-events:none; transition:opacity .6s, visibility .6s}
   /* while splash is active hide the rest of the app content and chat launcher */
   .splash-active #app, .splash-active .welcome-screen, .splash-active #chat-launcher{visibility:hidden; pointer-events:none}
@@ -574,10 +580,11 @@
           <stop offset="100%" stop-color="#C8102E"/>
         </linearGradient>
       </defs>
+      <circle id="glow-ring" cx="80" cy="110" r="58" fill="#F03A4A" opacity="0.18" />
       <path id="drop-path" d="M80 6 C110 44, 140 84, 140 122 C140 164, 110 192, 80 192 C50 192, 20 164, 20 122 C20 84, 50 44, 80 6 Z" fill="url(#dropGrad)" stroke="#900F25" stroke-width="2" transform="translate(0, -50) scale(0.6)"/>
       <g id="burst-rays" opacity="0" transform="translate(80,110)">
         <!-- simple radial rays -->
-        <g stroke="#F09" stroke-width="3" stroke-linecap="round">
+        <g stroke="#FFB3B8" stroke-width="3" stroke-linecap="round">
           <line x1="0" y1="-40" x2="0" y2="-90" />
           <line x1="35" y1="-30" x2="70" y2="-70" />
           <line x1="60" y1="0" x2="110" y2="0" />
@@ -587,6 +594,13 @@
           <line x1="-60" y1="0" x2="-110" y2="0" />
           <line x1="-35" y1="-30" x2="-70" y2="-70" />
         </g>
+      </g>
+      <g id="sparkles" opacity="0" transform="translate(80,110)">
+        <circle class="spark" cx="-52" cy="-18" r="4" />
+        <circle class="spark" cx="60" cy="-28" r="3" />
+        <circle class="spark" cx="50" cy="45" r="3.5" />
+        <circle class="spark" cx="-28" cy="56" r="3" />
+        <circle class="spark" cx="0" cy="-70" r="4" />
       </g>
     </svg>
     <div class="splash-title" id="splash-title">Blood Donation App</div>
@@ -840,8 +854,8 @@ let lastView = 'view-home';
 const splash = document.getElementById('splash-screen');
 const welcomeScreen = document.getElementById('welcome-screen');
 
-const SPLASH_DURATION = 10000; // ms
-const WELCOME_DURATION = 5000; // ms
+const SPLASH_DURATION = 10000; // ms (blood drop + burst)
+const WELCOME_DURATION = 8000; // ms (title visible after burst)
 
 if (splash && welcomeScreen) {
   // ensure welcome hidden until splash completes
@@ -854,11 +868,22 @@ if (splash && welcomeScreen) {
     // trigger burst rays and title animation
     const rays = document.getElementById('burst-rays');
     const title = document.getElementById('splash-title');
+    const glow = document.getElementById('glow-ring');
+    const sparkles = document.getElementById('sparkles');
+    if (glow) {
+      glow.style.animation = 'glowPulse 1200ms ease-out forwards';
+    }
     if (rays) {
       rays.style.opacity = '1';
       rays.style.transform = 'scale(1)';
       rays.style.transition = 'opacity 300ms ease-out, transform 600ms ease-out';
       rays.style.animation = 'raysOut 900ms ease-out forwards';
+    }
+    if (sparkles) {
+      sparkles.style.opacity = '1';
+      sparkles.querySelectorAll('.spark').forEach((spark, index) => {
+        spark.style.animation = `sparkleBurst 1200ms ease-out ${index * 80}ms forwards`;
+      });
     }
     if (title) {
       title.classList.add('animate');
