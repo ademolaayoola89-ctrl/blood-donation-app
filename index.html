@@ -50,6 +50,74 @@
   button{font-family:inherit; cursor:pointer;}
   a{color:inherit;}
 
+  .welcome-screen{
+    position:fixed;
+    inset:0;
+    z-index:120;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:linear-gradient(135deg, rgba(200,16,46,0.96) 0%, rgba(144,15,37,0.97) 100%);
+    transition:opacity .6s ease, visibility .6s ease;
+  }
+  .welcome-screen.hide{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  .welcome-card{
+    width:min(100%, 460px);
+    background:rgba(255,255,255,0.96);
+    border-radius:24px;
+    padding:32px 24px 28px;
+    text-align:center;
+    box-shadow:0 24px 70px rgba(14,2,2,0.24);
+    animation:welcomeRise .8s ease both;
+  }
+  .welcome-badge{
+    width:72px; height:72px; border-radius:50%; margin:0 auto 16px;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--crimson), #E45B6C);
+    color:var(--white);
+    box-shadow:0 12px 30px rgba(200,16,46,0.24);
+  }
+  .welcome-title{
+    font-size:clamp(1.8rem, 4vw, 2.35rem);
+    color:var(--crimson);
+    margin-bottom:10px;
+  }
+  .welcome-copy{
+    font-size:0.96rem; line-height:1.7; color:var(--rose-grey); margin:0 auto 16px;
+    max-width:340px;
+  }
+  .welcome-accent{
+    display:inline-block; padding:10px 14px; font-size:0.8rem; font-weight:700;
+    letter-spacing:0.08em; text-transform:uppercase; border-radius:999px;
+    color:var(--chat-blue); background:var(--chat-blue-soft);
+  }
+  .action-card .cta-row{
+    display:inline-flex; align-items:center; gap:8px; width:fit-content;
+    padding:9px 13px; margin-top:6px; border-radius:999px;
+    background:rgba(255,255,255,0.95); color:var(--crimson);
+    font-family:'JetBrains Mono',monospace; font-size:0.76rem; letter-spacing:0.06em; text-transform:uppercase;
+    font-weight:700; border:1px solid rgba(200,16,46,0.18);
+    box-shadow:0 6px 16px rgba(200,16,46,0.08);
+  }
+  .welcome-progress{
+    height:5px; width:100%; margin-top:20px; border-radius:999px;
+    background:linear-gradient(90deg, rgba(200,16,46,0.16), rgba(29,111,204,0.2));
+    overflow:hidden;
+    position:relative;
+  }
+  .welcome-progress::after{
+    content:''; position:absolute; inset:0; width:40%; border-radius:inherit;
+    background:linear-gradient(90deg, var(--crimson), var(--chat-blue));
+    animation:welcomeLoad 10s linear forwards;
+  }
+  @keyframes welcomeRise{from{transform:translateY(18px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  @keyframes welcomeLoad{from{transform:translateX(-100%);} to{transform:translateX(260%);}}
+
   /* ===== App shell ===== */
   #app{
     width:min(100%, 560px);
@@ -479,6 +547,21 @@
 </head>
 <body>
 
+<div class="welcome-screen" id="welcome-screen" aria-live="polite">
+  <div class="welcome-card">
+    <div class="welcome-badge">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3c2.4 2.3 4 4.2 4 6.4 0 2.4-1.5 4.3-4 4.3s-4-1.9-4-4.3C8 7.2 9.6 5.3 12 3Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M6 14c2.5 2 4.1 3.3 6 4.9 1.9-1.6 3.5-2.9 6-4.9" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1 class="welcome-title">You are welcome.</h1>
+    <p class="welcome-copy">Your generosity can offer hope, comfort, and life to someone in need. Thank you for your compassionate acts.</p>
+    <div class="welcome-accent">Book your donation now</div>
+    <div class="welcome-progress" aria-hidden="true"></div>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- ===================== HOME VIEW ===================== -->
@@ -497,13 +580,13 @@
       <button class="action-card primary" onclick="goTo('view-form')">
         <h2>I want to donate blood</h2>
         <p>Book a donation slot in under two minutes.</p>
-        <span class="cta-row">Click here to donate <span class="arrow">→</span></span>
+        <span class="cta-row">Click here <span class="arrow">→</span></span>
       </button>
 
       <button class="action-card primary" onclick="goTo('view-info')">
         <h2>Want to know more about blood donation?</h2>
         <p>Why it matters, who can give blood, and what to expect.</p>
-        <span class="cta-row">Click here to donate <span class="arrow">→</span></span>
+        <span class="cta-row">Click here <span class="arrow">→</span></span>
       </button>
 
     </div>
@@ -707,6 +790,14 @@
    NAVIGATION
 ========================================================= */
 let lastView = 'view-home';
+
+const welcomeScreen = document.getElementById('welcome-screen');
+if (welcomeScreen) {
+  setTimeout(() => {
+    welcomeScreen.classList.add('hide');
+    setTimeout(() => welcomeScreen.remove(), 650);
+  }, 10000);
+}
 
 function goTo(viewId){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
